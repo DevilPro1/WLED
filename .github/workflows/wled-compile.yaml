@@ -22,10 +22,9 @@ jobs:
         unzip /tmp/mm.zip -d /tmp
         find /tmp -maxdepth 1 -name "WLED-*" -type d >> wledfoldername
         mv `cat wledfoldername` /tmp/WLED-maindir
-        mv /tmp/WLED-main /tmp/WLED-maindir/src
     - name: Run PlatformIO
       run: |
-        cd /tmp/WLED-maindir/src
+        cd /tmp/WLED-maindir
         echo '[env:custom_build]' >>platformio.ini
         echo 'platform = espressif32' >>platformio.ini
         echo 'board = esp32dev' >>platformio.ini
