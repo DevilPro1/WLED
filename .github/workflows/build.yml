@@ -28,7 +28,12 @@ jobs:
         git clone --recursive https://github.com/espressif/esp-idf.git
         cd esp-idf
         ./install.sh
-        echo ". $PWD/export.sh" >> $GITHUB_ENV
+
+    - name: Source ESP-IDF environment
+      run: |
+        cd esp-idf
+        . ./export.sh
+      shell: bash
 
     - name: Prepare WLED build
       run: |
@@ -42,8 +47,11 @@ jobs:
     - name: Build WLED firmware
       run: |
         cd $GITHUB_WORKSPACE
-        source $GITHUB_ENV
+        cd esp-idf
+        . ./export.sh
+        cd $GITHUB_WORKSPACE
         idf.py build
+      shell: bash
 
     - name: Upload firmware
       uses: actions/upload-artifact@v2
@@ -51,3 +59,4 @@ jobs:
         name: wled-firmware
         path: |
           $GITHUB_WORKSPACE/build/*.bin
+
