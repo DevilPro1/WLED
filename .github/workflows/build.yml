@@ -40,8 +40,7 @@ jobs:
         cd $GITHUB_WORKSPACE
         git submodule update --init --recursive
         mkdir -p build
-        cp platformio_override.ini.example platformio_override.ini
-        echo "build_unflags = -fno-rtti" >> platformio_override.ini
+        echo "build_unflags = -fno-rtti" > platformio_override.ini
         echo "build_flags = -DRTC_USER_DATA_ENABLE" >> platformio_override.ini
 
     - name: Build WLED firmware
@@ -59,4 +58,5 @@ jobs:
         name: wled-firmware
         path: |
           $GITHUB_WORKSPACE/build/*.bin
+
 
