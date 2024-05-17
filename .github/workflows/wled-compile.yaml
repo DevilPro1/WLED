@@ -21,7 +21,7 @@ jobs:
         wget https://github.com/DevilPro1/WLED/archive/refs/heads/master.zip -O /tmp/mm.zip
         unzip /tmp/mm.zip -d /tmp
         find /tmp -maxdepth 1 -name "WLED-*" -type d >> wledfoldername
-        mv `cat wledfoldername` /tmp/WLED-maindir
+        mv `cat wledfoldername` /tmp/WLED-maindir/src
     - name: Run PlatformIO
       run: |
         cd /tmp/WLED-maindir
