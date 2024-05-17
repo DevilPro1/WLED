@@ -27,6 +27,7 @@ jobs:
         cd /tmp/WLED-maindir
         echo '[env:custom_build]' >>platformio.ini
         echo 'platform = espressif32' >>platformio.ini
+        echo 'board = esp32dev' >>platformio.ini
         echo 'extends = env:wemos_shield_esp32' >>platformio.ini
         echo 'build_flags = ${env:wemos_shield_esp32.build_flags} -D WLED_DISABLE_BROWNOUT_DET -D WLED_ENABLE_MQTT -D USERMOD_FAUXMO -D USERMOD_AUTO_SAVE' >>platformio.ini
         echo 'lib_deps = ' >>platformio.ini
