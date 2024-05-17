@@ -1,0 +1,3 @@
+[env:custom_build]
+extends = env:wemos_shield_esp32
+build_flags = ${env:wemos_shield_esp32.build_flags} -D WLED_DISABLE_BROWNOUT_DET -D WLED_ENABLE_MQTT -D USERMOD_AUTO_SAVE
