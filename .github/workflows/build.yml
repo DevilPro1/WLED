@@ -1,58 +1,55 @@
-name: Build WLED
+name: Status_led_gpio02_0_14-b3_esp8266
 
 on:
-  push:
-    branches:
-      - main
-  pull_request:
-    branches:
-      - main
+    workflow_dispatch:
 
 jobs:
   build:
+
     runs-on: ubuntu-latest
-
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v2
-
-    - name: Set up Python environment
-      uses: actions/setup-python@v2
+    - uses: actions/checkout@v3
+    - name: Set up Python
+      uses: actions/setup-python@v4
       with:
-        python-version: '3.x'
+        python-version: 3.9
 
-    - name: Install ESP-IDF
+    - name: Install PlatformIO
       run: |
-        sudo apt-get update
-        sudo apt-get install -y git wget flex bison gperf python3 python3-pip python3-setuptools cmake ninja-build ccache libffi-dev libssl-dev dfu-util libusb-1.0-0
-        git clone --recursive https://github.com/espressif/esp-idf.git
-        cd esp-idf
-        ./install.sh
-
-    - name: Source ESP-IDF environment
+        python -m pip install --upgrade pip
+        pip install --upgrade platformio
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+    - name: Run PlatformIO
       run: |
-        cd $GITHUB_WORKSPACE/esp-idf
-        . ./export.sh
-      shell: bash
-
-    - name: Prepare WLED build
+        rm -rf /tmp/WLEDtemp/* || true
+        mkdir -p /tmp/WLEDtemp
+        wget https://api.github.com/repos/Aircoookie/WLED/zipball/v0.14.1-b3 -O /tmp/WLEDtemp/mm.zip
+        unzip /tmp/WLEDtemp/mm.zip -d /tmp/WLEDtemp
+        find /tmp/WLEDtemp -maxdepth 1 -mindepth 1 -name "*" -type d >> /tmp/WLEDtemp/wledfoldername
+        cd `cat /tmp/WLEDtemp/wledfoldername`
+        npm install
+        echo '[env:custom_build]' >>platformio.ini
+        echo 'extends = env:nodemcuv2' >>platformio.ini
+        echo 'build_flags = ${env:nodemcuv2.build_flags} -D STATUSLED=2 -D USERMOD_PIRSWITCH' >>platformio.ini
+        echo 'lib_deps = ' >>platformio.ini
+        echo '  ${env:nodemcuv2.lib_deps}' >>platformio.ini
+        echo '  OneWire@~2.3.5' >>platformio.ini
+        
+        pio run -e custom_build || pio run -e custom_build
+    - name: Copy Files
       run: |
         cd $GITHUB_WORKSPACE
-        git submodule update --init --recursive
-        mkdir -p build
-        echo "build_unflags = -fno-rtti" > platformio_override.ini
-        echo "build_flags = -DRTC_USER_DATA_ENABLE" >> platformio_override.ini
-
-    - name: Build WLED firmware
+        git rm -r $GITHUB_WORKSPACE/*.bin || true
+        WLEDFOLDERNAME=`cat /tmp/WLEDtemp/wledfoldername`
+        cp ${WLEDFOLDERNAME}/build_output/firmware/custom_build.bin $GITHUB_WORKSPACE/
+        date -I | tr -d '\n' >$GITHUB_WORKSPACE/last_update_date.txt
+    - name: Commit Files
       run: |
         cd $GITHUB_WORKSPACE
-        cd wled00  # Cambia este directorio al que contiene CMakeLists.txt
-        idf.py build
-      shell: bash
-
-    - name: Upload firmware
-      uses: actions/upload-artifact@v2
-      with:
-        name: wled-firmware
-        path: |
-          $GITHUB_WORKSPACE/wled00/build/*.bin  # Cambia este directorio según corresponda
+        git config user.name "GitHub Actions Bot"
+        git config user.email "<>"
+        git add $GITHUB_WORKSPACE/custom_build.bin
+        git add $GITHUB_WORKSPACE/last_update_date.txt
+        git commit -m "Commit Custom Build"
+        git push origin main
