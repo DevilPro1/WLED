@@ -35,6 +35,7 @@ jobs:
         echo 'lib_deps = ' >>platformio.ini
         echo '  ${env:esp32dev.lib_deps}' >>platformio.ini
         echo '  Wire' >>platformio.ini
+        echo '  ArduinoJson' >>platformio.ini
         
         pio run -e custom_build || pio run -e custom_build
     - name: Copy Files
