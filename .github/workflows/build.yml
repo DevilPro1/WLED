@@ -35,6 +35,7 @@ jobs:
         echo 'lib_deps = ' >>platformio.ini
         echo '  ${env:esp32dev.lib_deps}' >>platformio.ini
         echo '  https://github.com/Links2004/arduinoWebSockets' >>platformio.ini
+        echo '  https://github.com/esp8266/Arduino' >>platformio.ini
         echo '  bblanchon/ArduinoJson @ 7.0.4' >>platformio.ini
         echo '  https://github.com/sinricpro/esp8266-esp32-sdk @ 3.1.0' >>platformio.ini
 
