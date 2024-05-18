@@ -1,16 +1,14 @@
-name: SinricPro
+name:  SinricPro
 
 on:
-  workflow_dispatch:
+    workflow_dispatch:
 
 jobs:
   build:
 
     runs-on: ubuntu-latest
-
     steps:
     - uses: actions/checkout@v3
-    
     - name: Set up Python
       uses: actions/setup-python@v4
       with:
@@ -20,45 +18,35 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install --upgrade platformio
-    
     - name: Set up Node.js
       uses: actions/setup-node@v4
-    
-    - name: Download and extract WLED source code
+    - name: Run PlatformIO
       run: |
         rm -rf /tmp/WLEDtemp/* || true
         mkdir -p /tmp/WLEDtemp
         wget https://github.com/DevilPro1/WLED-1/archive/refs/heads/main.zip -O /tmp/WLEDtemp/mm.zip
         unzip /tmp/WLEDtemp/mm.zip -d /tmp/WLEDtemp
-        find /tmp/WLEDtemp -maxdepth 1 -mindepth 1 -name "*" -type d > /tmp/WLEDtemp/wledfoldername
-    
-    - name: Configure and run PlatformIO
-      run: |
-        cd $(cat /tmp/WLEDtemp/wledfoldername)
+        find /tmp/WLEDtemp -maxdepth 1 -mindepth 1 -name "*" -type d >> /tmp/WLEDtemp/wledfoldername
+        cd `cat /tmp/WLEDtemp/wledfoldername`
         npm install
-        
-        # Add custom_build environment
-        echo '[env:custom_build]' >> platformio.ini
-        echo 'extends = env:esp32dev' >> platformio.ini
-        echo 'build_flags = ${env:esp32dev.build_flags} -D WLED_DISABLE_BROWNOUT_DET -D USERMOD_ID_SINRICPRO -D USERMOD_AUTO_SAVE' >> platformio.ini
-        echo 'lib_deps =' >> platformio.ini
-        echo '  ${env:esp32dev.lib_deps}' >> platformio.ini
-        echo '  Wire' >> platformio.ini
-        echo '  https://github.com/sinricpro/SinricPro.git' >> platformio.ini
-        echo '  bblanchon/ArduinoJson @ ^6.18.5' >> platformio.ini
-        echo '  https://github.com/esp8266/Arduino @ ^2.7.4' >> platformio.ini
-        echo '  ESP8266WiFi' >> platformio.ini
-        
+        echo '[env:custom_build]' >>platformio.ini
+        echo 'extends = env:esp32dev' >>platformio.ini
+        echo 'build_flags = ${env:esp32dev.build_flags} -D WLED_DISABLE_BROWNOUT_DET -D USERMOD_ID_SINRICPRO -D USERMOD_AUTO_SAVE' >>platformio.ini
+        echo 'lib_deps = ' >>platformio.ini
+        echo '  ${env:esp32dev.lib_deps}' >>platformio.ini
+        echo '  https://github.com/sinricpro/esp8266-esp32-sdk @ 3.1.0' >>platformio.ini
+        echo '  bblanchon/ArduinoJson @ 7.0.4' >>platformio.ini
+        echo '  https://github.com/websockets/ws' >>platformio.ini
+        echo '  https://github.com/esp8266/Arduino @ ^1.2.0' >>platformio.ini
+
         pio run -e custom_build || pio run -e custom_build
-    
     - name: Copy Files
       run: |
         cd $GITHUB_WORKSPACE
         git rm -r $GITHUB_WORKSPACE/*.bin || true
-        WLEDFOLDERNAME=$(cat /tmp/WLEDtemp/wledfoldername)
+        WLEDFOLDERNAME=`cat /tmp/WLEDtemp/wledfoldername`
         cp ${WLEDFOLDERNAME}/build_output/firmware/custom_build.bin $GITHUB_WORKSPACE/custom_build.bin
         date -I | tr -d '\n' >$GITHUB_WORKSPACE/last_update_date.txt
-    
     - name: Commit Files
       run: |
         cd $GITHUB_WORKSPACE
