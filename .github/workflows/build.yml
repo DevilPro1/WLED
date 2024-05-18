@@ -35,7 +35,7 @@ jobs:
         echo 'lib_deps = ' >>platformio.ini
         echo '  ${env:esp32dev.lib_deps}' >>platformio.ini
         echo '  Wire' >>platformio.ini
-        echo '  sinricpro/esp8266-esp32-sdk @ 3.1.0' >>platformio.ini
+        echo '  https://github.com/sinricpro/esp8266-esp32-sdk @ 3.1.0' >>platformio.ini
         echo '  bblanchon/ArduinoJson @ 7.0.4' >>platformio.ini
         
         pio run -e custom_build || pio run -e custom_build
