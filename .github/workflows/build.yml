@@ -35,8 +35,6 @@ jobs:
         echo 'lib_deps = ' >>platformio.ini
         echo '  ${env:esp32dev.lib_deps}' >>platformio.ini
         echo '  https://github.com/sinricpro/esp8266-esp32-sdk' >>platformio.ini
-        echo '  https://github.com/DevilPro1/Arduino' >>platformio.ini
-        echo '  https://github.com/DevilPro1/ESP8266WiFi' >>platformio.ini
 
         pio run -e custom_build || pio run -e custom_build
     - name: Copy Files
