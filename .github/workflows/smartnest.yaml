@@ -1,5 +1,4 @@
-name: SmartNest
-
+name: Smartnest
 on:
     workflow_dispatch:
 
@@ -24,17 +23,14 @@ jobs:
       run: |
         rm -rf /tmp/WLEDtemp/* || true
         mkdir -p /tmp/WLEDtemp
-        wget https://api.github.com/repos/Aircoookie/WLED/zipball/v0.14.1-b3 -O /tmp/WLEDtemp/mm.zip
+        wget https://github.com/Aircoookie/WLED/archive/refs/heads/main.zip -O /tmp/WLEDtemp/mm.zip
         unzip /tmp/WLEDtemp/mm.zip -d /tmp/WLEDtemp
         find /tmp/WLEDtemp -maxdepth 1 -mindepth 1 -name "*" -type d >> /tmp/WLEDtemp/wledfoldername
         cd `cat /tmp/WLEDtemp/wledfoldername`
         npm install
         echo '[env:custom_build]' >>platformio.ini
-        echo 'extends = env:nodemcuv2' >>platformio.ini
-        echo 'build_flags = ${env:esp32dev.build_flags} -D WLED_DISABLE_BROWNOUT_DET  -D WLED_DISABLE_ALEXA -D WLED_DISABLE_HUESYNC -D WLED_ENABLE_MQTT -D USERMOD_SMARTNEST -D USERMOD_AUTO_SAVE' >>platformio.ini
-        echo 'lib_deps = ' >>platformio.ini
-        echo '  ${env:nodemcuv2.lib_deps}' >>platformio.ini
-        echo '  OneWire@~2.3.5' >>platformio.ini
+        echo 'extends = env:esp32dev' >>platformio.ini
+        echo 'build_flags = ${env:esp32dev.build_flags} ${common.debug_flags} -D WLED_DEBUG -D STATUSLED=2' >>platformio.ini
         
         pio run -e custom_build || pio run -e custom_build
     - name: Copy Files
