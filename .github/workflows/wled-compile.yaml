@@ -1,19 +1,16 @@
-name: WLED compile
+name: ALDIY-esp32c3dev-USERMOD_BATTERY
 
 on:
-  workflow_dispatch:
+    workflow_dispatch:
 
 jobs:
   build:
 
     runs-on: ubuntu-latest
-
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-      
+    - uses: actions/checkout@v4
     - name: Set up Python
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v5
       with:
         python-version: 3.9
 
@@ -21,40 +18,35 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install --upgrade platformio
-        wget https://github.com/DevilPro1/WLED/archive/refs/heads/master.zip -O /tmp/mm.zip
-        unzip /tmp/mm.zip -d /tmp
-        mv /tmp/WLED-master /tmp/WLED-maindir
-        ls -l /tmp/WLED-maindir
-        
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
     - name: Run PlatformIO
       run: |
-        cd /tmp/WLED-maindir
+        rm -rf /tmp/WLEDtemp/* || true
+        mkdir -p /tmp/WLEDtemp
+        wget https://api.github.com/repos/Aircoookie/WLED/zipball/v0.15.0-b2 -O /tmp/WLEDtemp/mm.zip
+        unzip /tmp/WLEDtemp/mm.zip -d /tmp/WLEDtemp
+        find /tmp/WLEDtemp -maxdepth 1 -mindepth 1 -name "*" -type d >> /tmp/WLEDtemp/wledfoldername
+        cd `cat /tmp/WLEDtemp/wledfoldername`
+        npm install
         echo '[env:custom_build]' >>platformio.ini
-        echo 'platform = espressif32' >>platformio.ini
-        echo 'board = esp32dev' >>platformio.ini
-        echo 'extends = env:wemos_shield_esp32' >>platformio.ini
-        echo 'build_flags = ${env:wemos_shield_esp32.build_flags} -D WLED_DISABLE_BROWNOUT_DET -D WLED_ENABLE_MQTT -D USERMOD_FAUXMO -D USERMOD_AUTO_SAVE' >>platformio.ini
-        echo 'lib_deps = ' >>platformio.ini
-        echo '  ${env:wemos_shield_esp32.lib_deps}' >>platformio.ini
-        echo '  fauxmoESP@~3.4' >>platformio.ini
+        echo 'extends = env:esp32c3dev' >>platformio.ini
+        echo 'build_flags = ${env:esp32c3dev.build_flags} -D USERMOD_BATTERY' >>platformio.ini
         
         pio run -e custom_build || pio run -e custom_build
-
-      env:
-        PLATFORMIO_CI_SRC: /tmp/WLED-maindir/src
-
     - name: Copy Files
       run: |
         cd $GITHUB_WORKSPACE
-        git rm -r *.bin || true
-        cp /tmp/WLED-maindir/build_output/firmware/custom_build.bin .
-        date -I | tr -d '\n' > last_update_date.txt
-
+        git rm -r $GITHUB_WORKSPACE/*.bin || true
+        WLEDFOLDERNAME=`cat /tmp/WLEDtemp/wledfoldername`
+        cp ${WLEDFOLDERNAME}/build_output/firmware/custom_build.bin $GITHUB_WORKSPACE/
+        date -I | tr -d '\n' >$GITHUB_WORKSPACE/last_update_date.txt
     - name: Commit Files
       run: |
         cd $GITHUB_WORKSPACE
         git config user.name "GitHub Actions Bot"
         git config user.email "<>"
-        git add custom_build.bin last_update_date.txt
+        git add $GITHUB_WORKSPACE/custom_build.bin
+        git add $GITHUB_WORKSPACE/last_update_date.txt
         git commit -m "Commit Custom Build"
         git push origin main
