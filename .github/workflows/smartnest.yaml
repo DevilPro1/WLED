@@ -1,4 +1,4 @@
-name: DS18B20_0_14-b3_esp8266
+name: SmartNest
 
 on:
     workflow_dispatch:
@@ -31,7 +31,7 @@ jobs:
         npm install
         echo '[env:custom_build]' >>platformio.ini
         echo 'extends = env:nodemcuv2' >>platformio.ini
-        echo 'build_flags = ${env:nodemcuv2.build_flags} -D USERMOD_DALLASTEMPERATURE' >>platformio.ini
+        echo 'build_flags = ${env:esp32dev.build_flags} -D WLED_DISABLE_BROWNOUT_DET  -D WLED_DISABLE_ALEXA -D WLED_DISABLE_HUESYNC -D WLED_ENABLE_MQTT -D USERMOD_SMARTNEST -D USERMOD_AUTO_SAVE' >>platformio.ini
         echo 'lib_deps = ' >>platformio.ini
         echo '  ${env:nodemcuv2.lib_deps}' >>platformio.ini
         echo '  OneWire@~2.3.5' >>platformio.ini
